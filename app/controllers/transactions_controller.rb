@@ -1,4 +1,11 @@
 class TransactionsController < InheritedResources::Base
+  respond_to :json, except: [:edit, :new]
+
+  private
+
+    def permitted_params
+      params.permit(transaction: [:user_id, :balance_id, :value])
+    end
 
   protected
 

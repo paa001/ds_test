@@ -14,8 +14,8 @@ class Transaction < ActiveRecord::Base
   belongs_to :balance
   belongs_to :user
 
-  after_save    :balance_increment
-  after_destroy :balance_decrement
+  after_save    :update_balance
+  after_destroy :update_balance
 
   validates :balance_id, :user_id, presence: true
 
@@ -23,18 +23,10 @@ class Transaction < ActiveRecord::Base
 
   private
 
-  def balance_increment
-    update_balance()
-  end
-
-  def balance_decrement
-    update_balance(-1)
-  end
-
-  def update_balance(factor=1)
-    balance.with_lock do
-      balance.value += (self.value*factor)
-      balance.save!
+    def update_balance
+      balance.with_lock do
+        balance.value = balance.transactions.pluck(:value).sum
+        balance.save!
+      end
     end
-  end
 end
